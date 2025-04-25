@@ -1,10 +1,17 @@
 import { useState } from "react";
-import { Link } from "react-router-dom";
+import { Link,useNavigate } from "react-router-dom";
 import { FaGoogle, FaEnvelope, FaLock, FaUser, FaPhone } from "react-icons/fa";
 import { MdWc } from "react-icons/md";
 import { HiEye, HiEyeOff } from "react-icons/hi";
+import { apiSignup } from "../../services/auth";
+import toast from 'react-hot-toast';
+
 
 const Signup = () => {
+  const navigate = useNavigate(); // for navigating routes
+
+  const [loading,setLoading]= useState(false);
+
   // State variables to store input values and password visibility status
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
@@ -19,14 +26,34 @@ const Signup = () => {
     setShowConfirmPassword(!showConfirmPassword);
 
   // Handle form submission
-  const handleSubmit = (e) => {
-    e.preventDefault();
+  const handleSubmit = async (event) => {
+    event.preventDefault();
     // Validate that the passwords match
     if (password !== confirmPassword) {
       alert("Passwords do not match!");
       return;
     }
+
+    setLoading(true);
+    const formData = new FormData(event.target);
+
     // handle form submission (e.g., send data to backend)
+    try {
+      const response = await apiSignup(formData);// grabs the values from the form data and send it to the backend
+      console.log('response', response.data);
+
+      const user = response.data.data;
+      localStorage.setItem('token', user.token);
+
+      toast.success('successfully login to continue')
+      navigate('/login');
+    } catch (error) {
+      toast.error('sign Up unsuccessful');
+      console.log('SignUp Error', error?.response?.data || error.message);
+    } finally{
+      setLoading(false);
+    }
+
   };
 
   return (
@@ -42,6 +69,7 @@ const Signup = () => {
           <div className="relative">
             <FaUser className="absolute left-3 top-3 text-gray-400" />
             <input
+              name="name"
               type="text"
               placeholder="Full Name"
               className="w-full pl-10 border rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-[#CE9315] shadow-sm"
@@ -52,6 +80,7 @@ const Signup = () => {
           <div className="relative">
             <FaEnvelope className="absolute left-3 top-3 text-gray-400" />
             <input
+              name="email"
               type="email"
               placeholder="Email"
               className="w-full pl-10 border rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-[#CE9315] shadow-sm"
@@ -62,7 +91,8 @@ const Signup = () => {
           <div className="relative">
             <FaPhone className="absolute left-3 top-3 text-gray-400" />
             <input
-              type="tel"
+              name="phone"
+              type="text"
               placeholder="Phone Number"
               className="w-full pl-10 border rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-[#CE9315] shadow-sm"
             />
@@ -72,6 +102,7 @@ const Signup = () => {
           <div className="relative">
             <MdWc className="absolute left-3 top-3 text-gray-400" />
             <select
+              name="gender"
               className="w-full pl-10 border rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-[#CE9315] shadow-sm text-gray-500"
               defaultValue=""
             >
@@ -80,9 +111,6 @@ const Signup = () => {
               </option>
               <option value="male">Male</option>
               <option value="female">Female</option>
-              <option value="nonbinary">Non-binary</option>
-              <option value="other">Other</option>
-              <option value="prefer_not_say">Prefer not to say</option>
             </select>
           </div>
 
@@ -90,6 +118,7 @@ const Signup = () => {
           <div className="relative">
             <FaLock className="absolute left-3 top-3 text-gray-400" />
             <input
+              name="password"
               type={showPassword ? "text" : "password"} // Toggle between text and password type
               placeholder="Password"
               className="w-full pl-10 border rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-[#CE9315] shadow-sm"
@@ -110,6 +139,7 @@ const Signup = () => {
           <div className="relative">
             <FaLock className="absolute left-3 top-3 text-gray-400" />
             <input
+              name="confirmPassword"
               type={showConfirmPassword ? "text" : "password"} // Toggle between text and password type
               placeholder="Confirm Password"
               className="w-full pl-10 border rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-[#CE9315] shadow-sm"
@@ -129,9 +159,12 @@ const Signup = () => {
           {/* Submit Button */}
           <button
             type="submit"
-            className="w-full bg-[#CE9315] text-white py-2 rounded-lg hover:bg-[#b47611] transition duration-300"
+            className={`w-full bg-[#CE9315] text-white py-2 rounded-lg hover:bg-[#b47611] transition duration-300 ${
+              loading ? "cursor-not-allowed opacity-70" : ""
+            }`}
+            disabled={loading}
           >
-            Sign Up
+            {loading ? "Please Wait....." : "Sign Up"}
           </button>
         </form>
 

@@ -7,6 +7,8 @@ import {
   FaSignOutAlt,
   FaTimes,
 } from "react-icons/fa";
+import { useState } from "react";
+import { apiGetProfile } from "../services/getProfile";
 
 const navItems = [
   { label: "Overview", path: "/dashboard", icon: <FaHome />, exact: true },
@@ -53,7 +55,7 @@ const SideBar = ({ onClose }) => {
       {/* Exit/Logout */}
       <div className="mt-auto">
         <NavLink
-          to="/logout"
+          to="/"
           className="flex items-center gap-3 px-4 py-2 rounded-md text-red-600 hover:bg-red-50"
           onClick={onClose}
         >

@@ -1,7 +1,36 @@
 import { Link } from "react-router-dom";
 import { FaGoogle, FaEnvelope, FaLock } from "react-icons/fa";
+import { useNavigate } from "react-router-dom";
+import { useState } from "react";
+import toast from "react-hot-toast";
+import { apiLogin } from "../../services/auth";
 
 const Login = () => {
+  const navigate = useNavigate();
+  const [loading,setLoading] = useState(false);
+
+  const handleLogin = async (event) =>{
+    event.preventDefault();
+    setLoading(true);
+
+    const formData = new FormData(event.target);
+
+    try {
+      const response = await apiLogin(formData);
+      localStorage.setItem('token', response.data.token)
+
+      toast.success('login successful');
+
+      navigate('/dashboard');
+    } catch (error) {
+      toast.error('login unsuccessful');
+      console.log(error);
+    }finally{
+      setLoading(false);
+    }
+  }
+
+
   return (
     <div className="w-full h-[600px] flex items-center justify-center bg-gray-100 px-4">
       <div className="bg-white shadow-md rounded-xl p-8 w-full max-w-md">
@@ -9,10 +38,11 @@ const Login = () => {
           Login
         </h2>
 
-        <form className="space-y-4 text-gray-700">
+        <form className="space-y-4 text-gray-700" onSubmit={handleLogin}>
           <div className="relative">
             <FaEnvelope className="absolute left-3 top-3 text-gray-400" />
             <input
+              name="email"
               type="email"
               placeholder="Email"
               className="w-full pl-10 border rounded-lg px-4 py-2 focus:outline-none   shadow-sm"
@@ -21,6 +51,7 @@ const Login = () => {
           <div className="relative">
             <FaLock className="absolute left-3 top-3 text-gray-400" />
             <input
+              name="password"
               type="password"
               placeholder="Password"
               className="w-full pl-10 border rounded-lg px-4 py-2 focus:outline-none  shadow-sm"
@@ -29,9 +60,9 @@ const Login = () => {
 
           <button
             type="submit"
-            className="w-full bg-[#CE9315] text-white py-2 rounded-lg hover:bg-[#b47611] transition duration-300"
+            className={`w-full bg-[#CE9315] text-white py-2 rounded-lg hover:bg-[#b47611] transition duration-300 ${loading ? 'opacity-70 cursor-not-allowed':''} `} disabled={loading}
           >
-            Login
+            {loading ? 'Please wait.....': 'Login'}
           </button>
         </form>
 

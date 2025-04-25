@@ -1,4 +1,4 @@
-import React from "react";
+import React,{useState,useEffect, use} from "react";
 import {
   FaStethoscope,
   FaCalendarAlt,
@@ -8,9 +8,63 @@ import {
 import OverviewCard from "../../components/OverviewCard";
 import { motion } from "framer-motion";
 import { useNavigate } from "react-router-dom";
+import { apiGetDoctors } from "../../services/getAllDoctors";
+import { apiGetAppointment } from "../../services/appointments";
+import { apiGetProfile } from "../../services/getProfile";
 
 const Overview = () => {
   const navigate = useNavigate();
+  const [allDoc, setAllDocs] = useState([]);
+
+  const [appointments, setAppointments]=useState([]);
+
+  const [profile, setProfile]=useState([]);
+
+  const fetchProfile = async () =>{
+    try {
+      const response = await apiGetProfile();
+      setProfile(response.data.data);
+    } catch (error) {
+      console.log(error);
+    }
+  }
+
+  useEffect(()=>{
+    fetchProfile();
+  }, []);
+
+  const fetchAppointments = async () =>{
+    try {
+      const response = await apiGetAppointment();
+      setAppointments(response.data.data);
+    } catch (error) {
+      console.log(error)
+    }
+  };
+
+  useEffect (() =>{
+    fetchAppointments();
+  }, []);
+
+  const upcomingAppointments = appointments.filter(
+    (a) => new Date(a.appointmentSlot?.date) >= new Date()
+  );
+
+
+  const getDoctors = async () => {
+      try {
+        const response = await apiGetDoctors();
+        const fetchedDoctors = response.data.data;
+        setAllDocs(fetchedDoctors);
+      } catch (error) {
+        console.log(error);
+      }
+    };
+  
+    useEffect(() => {
+      getDoctors();
+    }, []);
+
 
   return (
     <div className="p-4 md:p-6 lg:p-8 space-y-6">
@@ -19,7 +73,7 @@ const Overview = () => {
         <div>
           {/* Replace 'John Doe' with backend patient name */}
           <h2 className="text-3xl md:text-4xl font-bold text-[#DAA520CC] mb-1">
-            Welcome, John Doe 👋
+            Welcome, {profile.name}  👋
           </h2>
           <p className="text-md md:text-lg text-gray-700">
             Here’s a summary of your health dashboard.
@@ -55,13 +109,13 @@ const Overview = () => {
         <OverviewCard
           icon={<FaStethoscope />}
           label="Doctors Available"
-          value="10"
+          value={allDoc.length}
           delay={0.1}
         />
         <OverviewCard
           icon={<FaCalendarAlt />}
           label="Upcoming Appointments"
-          value="2"
+          value={upcomingAppointments.length}
           delay={0.2}
         />
         <OverviewCard

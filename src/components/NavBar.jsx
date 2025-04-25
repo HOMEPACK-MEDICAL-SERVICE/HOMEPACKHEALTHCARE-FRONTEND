@@ -9,6 +9,8 @@ const NavBar = () => {
   const [scrolled, setScrolled] = useState(false);
   const location = useLocation();
 
+  
+
   const toggleMenu = () => setIsOpen(!isOpen);
 
   useEffect(() => {
